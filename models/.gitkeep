@@ -1,0 +1,2 @@
+# Placeholder to keep the models directory in git.
+# Run 'python scripts/download_model.py' to download the MediaPipe hand_landmarker.task file.

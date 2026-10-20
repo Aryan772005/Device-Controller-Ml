@@ -1,0 +1,38 @@
+# GestureFlow AI - .gitignore
+
+# Python Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OS Generated Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Temporary Files, Logs & Large Model Weights
+*.log
+*.tmp
+*.task
