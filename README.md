@@ -1,4 +1,4 @@
-# GestureFlow AI
+# GestureFlow 
 
 GestureFlow AI is a real-time hand gesture recognition system designed for Windows, enabling intuitive, touchless control of desktop and media functions through computer vision and machine learning.
 
