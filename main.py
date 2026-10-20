@@ -39,6 +39,11 @@ def main() -> None:
         action="store_true",
         help="Start in safe DRY_RUN simulation mode instead of live ACTIVE control",
     )
+    parser.add_argument(
+        "--ml",
+        action="store_true",
+        help="Use custom trained ML model (trained via scripts/train_classifier.py)",
+    )
     args = parser.parse_args()
 
     start_active = not args.dry_run
@@ -46,6 +51,8 @@ def main() -> None:
     print("\n" + "=" * 65)
     print("   GESTUREFLOW AI - REAL WINDOWS DEVICE CONTROLLER")
     print("=" * 65)
+    if args.ml:
+        print(" [MODEL] CUSTOM ML MODEL ACTIVE (--ml)")
     if start_active:
         print(" [STATUS] ACTIVE MODE (REAL CONTROL)")
         print("  * Point with index finger to MOVE MOUSE CURSOR")
@@ -62,7 +69,7 @@ def main() -> None:
         print("  * Press 'A' to arm real Windows control")
     print("=" * 65 + "\n")
 
-    run(camera_index=args.camera, start_active=start_active)
+    run(camera_index=args.camera, start_active=start_active, use_ml=args.ml)
 
 
 if __name__ == "__main__":

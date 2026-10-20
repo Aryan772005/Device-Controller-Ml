@@ -16,6 +16,15 @@ from src.system_controller import (
     SystemController, ControllerState, ControlMode,
     DESKTOP_TRIGGER_MAP, MEDIA_TRIGGER_MAP, GAMING_HOLD_MAP, BROWSER_TRIGGER_MAP,
 )
+from src.ml_gesture_recognizer import MLGestureRecognizer
+
+ML_LABEL_MAP = {
+    "MOVE": GestureLabel.POINTING,
+    "CLICK": GestureLabel.PINCH,
+    "RIGHT_CLICK": GestureLabel.FIST,
+    "IDLE": GestureLabel.OPEN_PALM,
+    "DOUBLE_CLICK": GestureLabel.PEACE,
+}
 
 # ---------- Windows focus control ------------------------------------------
 user32 = ctypes.windll.user32
@@ -202,7 +211,7 @@ def open_webcam(idx: int = 0) -> Optional[cv2.VideoCapture]:
 
 
 # ---------- Main -----------------------------------------------------------
-def run(camera_index: int = 0, start_active: bool = False) -> None:
+def run(camera_index: int = 0, start_active: bool = False, use_ml: bool = False) -> None:
     print("=" * 60)
     print("GestureFlow AI - Full System Controller v2")
     print("=" * 60)
@@ -212,6 +221,13 @@ def run(camera_index: int = 0, start_active: bool = False) -> None:
 
     tracker     = HandTracker(num_hands=1, selfie_mode=True)
     recognizer  = GestureRecognizer()
+    ml_recognizer = MLGestureRecognizer()
+    if use_ml:
+        if ml_recognizer.is_loaded:
+            print("[INFO] Custom ML Gesture Model loaded successfully!")
+        else:
+            print("[WARN] Custom ML model not found in models/. Using standard recognizer.")
+            use_ml = False
     stabilizer  = GestureStabilizer(window_size=5, agreement_ratio=0.60,
                                      max_missing_frames=5)
     evt_mgr     = GestureEventManager(cooldown_seconds=0.6,
@@ -275,8 +291,13 @@ def run(camera_index: int = 0, start_active: bool = False) -> None:
                 idx_x   = lms[8].x / wf    # index finger tip
                 idx_y   = lms[8].y / hf
 
-                pred = recognizer.recognize(lms)
-                stab = stabilizer.update_detailed(hand.handedness, pred.label)
+                if use_ml and ml_recognizer.is_loaded:
+                    ml_lbl, ml_conf = ml_recognizer.predict(hand.landmarks)
+                    mapped_label = ML_LABEL_MAP.get(ml_lbl, GestureLabel.UNKNOWN)
+                    stab = stabilizer.update_detailed(hand.handedness, mapped_label)
+                else:
+                    pred = recognizer.recognize(lms)
+                    stab = stabilizer.update_detailed(hand.handedness, pred.label)
                 cur_g = stab.gesture
 
                 # ── BROWSER GAME MODE (Subway Surfers) ──────────────────────
@@ -414,7 +435,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="GestureFlow AI Full System Controller")
     parser.add_argument("camera_index", nargs="?", type=int, default=0, help="Camera device index (default 0)")
     parser.add_argument("--active", "-a", action="store_true", help="Start directly in ACTIVE mode (live Windows control)")
+    parser.add_argument("--ml", action="store_true", help="Use custom trained ML model (from models/custom_gesture_model.joblib)")
     parser.add_argument("--camera", "-c", type=int, default=None, help="Camera device index")
     args = parser.parse_args()
     cam = args.camera if args.camera is not None else args.camera_index
-    run(camera_index=cam, start_active=args.active)
+    run(camera_index=cam, start_active=args.active, use_ml=args.ml)
